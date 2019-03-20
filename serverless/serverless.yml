@@ -1,0 +1,53 @@
+service:
+  name: GlobalAPI
+
+plugins:
+  - serverless-webpack
+  - serverless-prune-plugin
+  - serverless-offline
+  - serverless-domain-manager
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  timeout: 30
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:GetItem
+        - dynamodb:Scan
+      Resource:
+        - 'Fn::Join':
+          - ':'
+          -
+            - 'arn:aws:dynamodb'
+            - Ref: 'AWS::Region'
+            - Ref: 'AWS::AccountId'
+            - 'table/Countries'
+
+custom:
+  customDomain:
+    domainName: 'api-${opt:region, self.provider.region}.demo.cloudproject.dev'
+    stage: ${opt.stage, self.provider.stage}
+    basePath: countries
+    certificateName: 'demo.cloudproject.dev'
+    createRoute53Record: true
+    endpointType: REGIONAL
+    hostedZoneId: ZZ5UAD0GJLHMT
+  prune:
+    automatic: true
+    number: 3
+
+functions:
+
+  getCountry:
+    handler: src/handlers/countries.getCountry
+    events:
+      - http:
+          method: get
+          cors: true
+          path: country/{id}
+          request:
+            parameters:
+              paths:
+                id: true
