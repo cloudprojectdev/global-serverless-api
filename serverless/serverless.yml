@@ -51,3 +51,12 @@ functions:
             parameters:
               paths:
                 id: true
+
+  getCountries:
+    handler: src/handlers/countries.getCountries
+    events:
+      - http:
+          method: get
+          cors: true
+          path: all
+          
